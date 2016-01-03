@@ -607,7 +607,7 @@ public class Item implements Cloneable {
             list[BREWING_STAND] = BrewingStand.class;
             list[GLASS_BOTTLE] = GlassBottle.class;
             list[POTION] = Potion.class;
-            //list[SPLASH_POTION] = SplashPotion.class;
+            list[SPLASH_POTION] = SplashPotion.class;
             list[EXPERIENCE_BOTTLE] = ExpBottle.class;
 
             for (int i = 0; i < 256; ++i) {
