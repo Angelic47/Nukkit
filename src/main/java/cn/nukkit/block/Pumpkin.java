@@ -3,7 +3,6 @@ package cn.nukkit.block;
 import cn.nukkit.Player;
 import cn.nukkit.item.Item;
 import cn.nukkit.item.Tool;
-import cn.nukkit.utils.Color;
 
 /**
  * Created on 2015/12/8 by xtypr.
@@ -52,10 +51,5 @@ public class Pumpkin extends Solid {
         }
         this.getLevel().setBlock(block, this, true, true);
         return true;
-    }
-
-    @Override
-    public Color getMapColor() {
-        return Color.foliageColor;
     }
 }

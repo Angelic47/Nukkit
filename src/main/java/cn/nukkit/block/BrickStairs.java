@@ -1,7 +1,6 @@
 package cn.nukkit.block;
 
 import cn.nukkit.item.Tool;
-import cn.nukkit.utils.Color;
 
 /**
  * Created on 2015/11/25 by xtypr.
@@ -40,10 +39,4 @@ public class BrickStairs extends Stair {
     public String getName() {
         return "Brick Stairs";
     }
-
-    @Override
-    public Color getMapColor() {
-        return Color.stoneColor;
-    }
-
 }

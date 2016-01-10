@@ -5,7 +5,6 @@ import cn.nukkit.item.Item;
 import cn.nukkit.item.Tool;
 import cn.nukkit.level.Level;
 import cn.nukkit.math.AxisAlignedBB;
-import cn.nukkit.utils.Color;
 
 /**
  * @author Nukkit Project Team
@@ -99,8 +98,4 @@ public class SignPost extends Transparent {
         return Tool.TYPE_AXE;
     }
 
-    @Override
-    public Color getMapColor() {
-        return Color.airColor;
-    }
 }

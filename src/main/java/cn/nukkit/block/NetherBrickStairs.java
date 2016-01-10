@@ -1,7 +1,6 @@
 package cn.nukkit.block;
 
 import cn.nukkit.item.Tool;
-import cn.nukkit.utils.Color;
 
 /**
  * Created on 2015/11/25 by xtypr.
@@ -35,10 +34,4 @@ public class NetherBrickStairs extends Stair {
     public String getName() {
         return "Nether Bricks Stairs";
     }
-
-    @Override
-    public Color getMapColor() {
-        return Color.netherrackColor;
-    }
-
 }

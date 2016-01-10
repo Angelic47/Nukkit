@@ -2,7 +2,6 @@ package cn.nukkit.block;
 
 import cn.nukkit.item.Item;
 import cn.nukkit.item.Tool;
-import cn.nukkit.utils.Color;
 
 /**
  * author: MagicDroidX
@@ -60,10 +59,5 @@ public class Sandstone extends Solid {
     @Override
     public int getToolType() {
         return Tool.TYPE_PICKAXE;
-    }
-
-    @Override
-    public Color getMapColor() {
-        return Color.sandColor;
     }
 }

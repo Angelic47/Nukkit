@@ -2,7 +2,6 @@ package cn.nukkit.block;
 
 import cn.nukkit.item.Item;
 import cn.nukkit.item.Tool;
-import cn.nukkit.utils.Color;
 
 /**
  * Created on 2015/12/6 by xtypr.
@@ -52,10 +51,5 @@ public class IronBars extends Thin {
         } else {
             return new int[][]{};
         }
-    }
-
-    @Override
-    public Color getMapColor() {
-        return Color.ironColor;
     }
 }

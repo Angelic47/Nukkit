@@ -4,7 +4,6 @@ import cn.nukkit.Player;
 import cn.nukkit.item.Item;
 import cn.nukkit.level.Level;
 import cn.nukkit.math.AxisAlignedBB;
-import cn.nukkit.utils.Color;
 
 /**
  * @author Nukkit Project Team
@@ -62,8 +61,4 @@ public class BrownMushroom extends Flowable {
         return null;
     }
 
-    @Override
-    public Color getMapColor() {
-        return Color.foliageColor;
-    }
 }

@@ -6,7 +6,6 @@ import cn.nukkit.item.Item;
 import cn.nukkit.item.Tool;
 import cn.nukkit.level.Level;
 import cn.nukkit.math.Vector3;
-import cn.nukkit.utils.Color;
 import cn.nukkit.utils.Random;
 
 /**
@@ -67,10 +66,5 @@ public class Mycelium extends Solid {
             }
         }
         return 0;
-    }
-
-    @Override
-    public Color getMapColor() {
-        return Color.grassColor;
     }
 }

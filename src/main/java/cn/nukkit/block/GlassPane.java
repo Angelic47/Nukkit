@@ -1,7 +1,6 @@
 package cn.nukkit.block;
 
 import cn.nukkit.item.Item;
-import cn.nukkit.utils.Color;
 
 /**
  * Created on 2015/12/6 by xtypr.
@@ -36,10 +35,5 @@ public class GlassPane extends Thin {
     @Override
     public int[][] getDrops(Item item) {
         return new int[][]{};
-    }
-
-    @Override
-    public Color getMapColor() {
-        return Color.airColor;
     }
 }

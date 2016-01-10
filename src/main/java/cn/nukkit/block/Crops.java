@@ -5,7 +5,6 @@ import cn.nukkit.Server;
 import cn.nukkit.event.block.BlockGrowEvent;
 import cn.nukkit.item.Item;
 import cn.nukkit.level.Level;
-import cn.nukkit.utils.Color;
 
 import java.util.Random;
 
@@ -90,10 +89,5 @@ public abstract class Crops extends Flowable {
         }
 
         return 0;
-    }
-
-    @Override
-    public Color getMapColor() {
-        return Color.foliageColor;
     }
 }

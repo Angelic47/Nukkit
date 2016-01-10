@@ -3,7 +3,6 @@ package cn.nukkit.block;
 import cn.nukkit.Player;
 import cn.nukkit.item.Item;
 import cn.nukkit.item.Tool;
-import cn.nukkit.utils.Color;
 
 /**
  * author: Angelic47
@@ -74,10 +73,4 @@ public class Leaves extends Transparent {
     }
 
     //todo:LeavesOnUpdate
-
-
-    @Override
-    public Color getMapColor() {
-        return Color.foliageColor;
-    }
 }

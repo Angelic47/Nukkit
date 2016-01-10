@@ -2,7 +2,6 @@ package cn.nukkit.block;
 
 import cn.nukkit.item.Item;
 import cn.nukkit.item.Tool;
-import cn.nukkit.utils.Color;
 
 /**
  * Created on 2015/12/7 by xtypr.
@@ -66,11 +65,6 @@ public class NetherBrickFence extends Fence {
     @Override
     public boolean canConnect(Block block) {
         return (block instanceof NetherBrickFence || block instanceof FenceGate) || block.isSolid() && !block.isTransparent();
-    }
-
-    @Override
-    public Color getMapColor() {
-        return Color.netherrackColor;
     }
 
 }

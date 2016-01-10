@@ -9,7 +9,6 @@ import cn.nukkit.nbt.tag.ListTag;
 import cn.nukkit.nbt.tag.StringTag;
 import cn.nukkit.nbt.tag.Tag;
 import cn.nukkit.tile.Tile;
-import cn.nukkit.utils.Color;
 
 import java.util.Iterator;
 import java.util.Map;
@@ -175,10 +174,5 @@ public class Chest extends Transparent {
     @Override
     public int[][] getDrops(Item item) {
         return new int[][]{new int[]{this.getId(), 0, 1}};
-    }
-
-    @Override
-    public Color getMapColor() {
-        return Color.woodColor;
     }
 }

@@ -3,7 +3,6 @@ package cn.nukkit.block;
 import cn.nukkit.Player;
 import cn.nukkit.item.Item;
 import cn.nukkit.item.Tool;
-import cn.nukkit.utils.Color;
 
 public class SnowBlock extends Solid {
 
@@ -70,10 +69,5 @@ public class SnowBlock extends Solid {
             };
         }
         return new int[][]{};
-    }
-
-    @Override
-    public Color getMapColor() {
-        return Color.snowColor;
     }
 }

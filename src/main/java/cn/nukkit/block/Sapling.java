@@ -2,7 +2,6 @@ package cn.nukkit.block;
 
 import cn.nukkit.Player;
 import cn.nukkit.item.Item;
-import cn.nukkit.utils.Color;
 
 /**
  * author: Angelic47
@@ -67,8 +66,4 @@ public class Sapling extends Flowable {
         return new int[][]{new int[]{Item.SAPLING, this.getDamage(), 1}};
     }
 
-    @Override
-    public Color getMapColor() {
-        return Color.foliageColor;
-    }
 }

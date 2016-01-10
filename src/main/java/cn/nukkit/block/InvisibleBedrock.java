@@ -1,7 +1,6 @@
 package cn.nukkit.block;
 
 import cn.nukkit.item.Item;
-import cn.nukkit.utils.Color;
 
 /**
  * Created by Pub4Game on 03.01.2016.
@@ -40,10 +39,4 @@ public class InvisibleBedrock extends Solid {
     public boolean isBreakable(Item item) {
         return false;
     }
-
-    @Override
-    public Color getMapColor() {
-        return Color.transparentColor;
-    }
-
 }

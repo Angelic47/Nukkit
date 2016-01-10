@@ -6,7 +6,6 @@ import cn.nukkit.item.Item;
 import cn.nukkit.item.Tool;
 import cn.nukkit.level.Level;
 import cn.nukkit.math.AxisAlignedBB;
-import cn.nukkit.utils.Color;
 
 /**
  * Created on 2015/12/8 by xtypr.
@@ -143,10 +142,5 @@ public class Ladder extends Transparent {
         return new int[][]{
                 {this.getId(), 0, 1}
         };
-    }
-
-    @Override
-    public Color getMapColor() {
-        return Color.airColor;
     }
 }
