@@ -1,6 +1,7 @@
 package cn.nukkit.block;
 
 import cn.nukkit.level.Level;
+import cn.nukkit.utils.Color;
 
 /**
  * Created on 2015/12/2 by xtypr.
@@ -35,5 +36,10 @@ public class DeadBush extends Flowable {
             }
         }
         return 0;
+    }
+
+    @Override
+    public Color getMapColor() {
+        return Color.foliageColor;
     }
 }
