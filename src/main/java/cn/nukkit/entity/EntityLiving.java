@@ -4,6 +4,7 @@ import cn.nukkit.Server;
 import cn.nukkit.block.Block;
 import cn.nukkit.entity.data.ShortEntityData;
 import cn.nukkit.entity.passive.EntityWaterAnimal;
+import cn.nukkit.event.Timings;
 import cn.nukkit.event.entity.*;
 import cn.nukkit.item.Item;
 import cn.nukkit.level.format.FullChunk;
@@ -179,6 +180,7 @@ public abstract class EntityLiving extends Entity implements EntityDamageable {
 
     @Override
     public boolean entityBaseTick(int tickDiff) {
+        Timings.timerLivingEntityBaseTick.startTiming();
         boolean hasUpdate = super.entityBaseTick(tickDiff);
 
         if (this.isAlive()) {
@@ -224,6 +226,7 @@ public abstract class EntityLiving extends Entity implements EntityDamageable {
         if (this.attackTime > 0) {
             this.attackTime -= tickDiff;
         }
+        Timings.timerLivingEntityBaseTick.stopTiming();
 
         return hasUpdate;
     }
@@ -278,7 +281,7 @@ public abstract class EntityLiving extends Entity implements EntityDamageable {
     }
 
     public Block getTargetBlock(int maxDistance) {
-        return getTargetBlock(maxDistance, new HashMap<Integer, Object>());
+        return getTargetBlock(maxDistance, new HashMap<>());
     }
 
     public Block getTargetBlock(int maxDistance, Map<Integer, Object> transparent) {
@@ -288,7 +291,7 @@ public abstract class EntityLiving extends Entity implements EntityDamageable {
             if (block instanceof Block) {
                 return block;
             }
-        } catch (Exception e) {
+        } catch (Exception ignored) {
 
         }
 

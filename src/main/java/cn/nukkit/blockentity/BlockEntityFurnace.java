@@ -23,7 +23,7 @@ import cn.nukkit.network.protocol.ContainerSetDataPacket;
  */
 public class BlockEntityFurnace extends BlockEntitySpawnable implements InventoryHolder, BlockEntityContainer, BlockEntityNameable {
 
-    protected FurnaceInventory inventory;
+    protected final FurnaceInventory inventory;
 
     public BlockEntityFurnace(FullChunk chunk, CompoundTag nbt) {
         super(chunk, nbt);
@@ -187,6 +187,8 @@ public class BlockEntityFurnace extends BlockEntitySpawnable implements Inventor
             return false;
         }
 
+        this.timings.startTiming();
+
         boolean ret = false;
         Item fuel = this.inventory.getFuel();
         Item raw = this.inventory.getSmelting();
@@ -255,6 +257,8 @@ public class BlockEntityFurnace extends BlockEntitySpawnable implements Inventor
         }
 
         this.lastUpdate = System.currentTimeMillis();
+
+        this.timings.stopTiming();
 
         return ret;
     }

@@ -13,7 +13,7 @@ import java.lang.reflect.Method;
  */
 public class MethodEventExecutor implements EventExecutor {
 
-    private Method method;
+    private final Method method;
 
     public MethodEventExecutor(Method method) {
         this.method = method;
@@ -26,5 +26,9 @@ public class MethodEventExecutor implements EventExecutor {
         } catch (IllegalAccessException | InvocationTargetException e) {
             Server.getInstance().getLogger().logException(e);
         }
+    }
+
+    public Method getMethod() {
+        return method;
     }
 }

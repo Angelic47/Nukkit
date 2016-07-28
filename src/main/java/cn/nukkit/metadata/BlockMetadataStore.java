@@ -11,7 +11,7 @@ import java.util.List;
  * Nukkit Project
  */
 public class BlockMetadataStore extends MetadataStore {
-    private Level owningLevel;
+    private final Level owningLevel;
 
     public BlockMetadataStore(Level owningLevel) {
         this.owningLevel = owningLevel;
@@ -30,7 +30,7 @@ public class BlockMetadataStore extends MetadataStore {
         if (!(block instanceof Block)) {
             throw new IllegalArgumentException("Object must be a Block");
         }
-        if (((Block) block).getLevel().equals(this.owningLevel)) {
+        if (((Block) block).getLevel() == this.owningLevel) {
             return super.getMetadata(block, metadataKey);
         } else {
             throw new IllegalStateException("Block does not belong to world " + this.owningLevel.getName());
@@ -42,7 +42,7 @@ public class BlockMetadataStore extends MetadataStore {
         if (!(block instanceof Block)) {
             throw new IllegalArgumentException("Object must be a Block");
         }
-        if (((Block) block).getLevel().equals(this.owningLevel)) {
+        if (((Block) block).getLevel() == this.owningLevel) {
             return super.hasMetadata(block, metadataKey);
         } else {
             throw new IllegalStateException("Block does not belong to world " + this.owningLevel.getName());
@@ -54,7 +54,7 @@ public class BlockMetadataStore extends MetadataStore {
         if (!(block instanceof Block)) {
             throw new IllegalArgumentException("Object must be a Block");
         }
-        if (((Block) block).getLevel().equals(this.owningLevel)) {
+        if (((Block) block).getLevel() == this.owningLevel) {
             super.removeMetadata(block, metadataKey, owningPlugin);
         } else {
             throw new IllegalStateException("Block does not belong to world " + this.owningLevel.getName());
@@ -66,7 +66,7 @@ public class BlockMetadataStore extends MetadataStore {
         if (!(block instanceof Block)) {
             throw new IllegalArgumentException("Object must be a Block");
         }
-        if (((Block) block).getLevel().equals(this.owningLevel)) {
+        if (((Block) block).getLevel() == this.owningLevel) {
             super.setMetadata(block, metadataKey, newMetadataValue);
         } else {
             throw new IllegalStateException("Block does not belong to world " + this.owningLevel.getName());

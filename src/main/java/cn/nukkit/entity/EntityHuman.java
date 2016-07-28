@@ -11,7 +11,7 @@ import cn.nukkit.nbt.NBTIO;
 import cn.nukkit.nbt.tag.CompoundTag;
 import cn.nukkit.nbt.tag.ListTag;
 import cn.nukkit.network.protocol.AddPlayerPacket;
-import cn.nukkit.network.protocol.RemovePlayerPacket;
+import cn.nukkit.network.protocol.RemoveEntityPacket;
 import cn.nukkit.utils.Utils;
 
 import java.nio.charset.StandardCharsets;
@@ -90,7 +90,7 @@ public class EntityHuman extends EntityCreature implements InventoryHolder {
     protected void initEntity() {
         this.setDataFlag(DATA_PLAYER_FLAGS, DATA_PLAYER_FLAG_SLEEP, false);
 
-        this.setDataProperty(new PositionEntityData(DATA_PLAYER_BED_POSITION, 0, 0, 0));
+        this.setDataProperty(new PositionEntityData(DATA_PLAYER_BED_POSITION, 0, 0, 0), false);
 
         this.inventory = new PlayerInventory(this);
         if (this instanceof Player) {
@@ -190,7 +190,7 @@ public class EntityHuman extends EntityCreature implements InventoryHolder {
 
     @Override
     public void spawnTo(Player player) {
-        if (!this.equals(player) && !this.hasSpawned.containsKey(player.getLoaderId())) {
+        if (this != player && !this.hasSpawned.containsKey(player.getLoaderId())) {
             this.hasSpawned.put(player.getLoaderId(), player);
 
             if (this.skin.getData().length < 64 * 32 * 4) {
@@ -229,9 +229,8 @@ public class EntityHuman extends EntityCreature implements InventoryHolder {
     public void despawnFrom(Player player) {
         if (this.hasSpawned.containsKey(player.getLoaderId())) {
 
-            RemovePlayerPacket pk = new RemovePlayerPacket();
+            RemoveEntityPacket pk = new RemoveEntityPacket();
             pk.eid = this.getId();
-            pk.uuid = this.getUniqueId();
             player.dataPacket(pk);
             this.hasSpawned.remove(player.getLoaderId());
         }

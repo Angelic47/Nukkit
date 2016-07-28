@@ -45,6 +45,10 @@ public class PlayerTeleportEvent extends PlayerEvent implements Cancellable {
         return to;
     }
 
+    public TeleportCause getCause() {
+        return cause;
+    }
+
     private Location vectorToLocation(Level baseLevel, Vector3 vector) {
         if (vector instanceof Location) return (Location) vector;
         if (vector instanceof Position) return ((Position) vector).getLocation();
@@ -56,6 +60,6 @@ public class PlayerTeleportEvent extends PlayerEvent implements Cancellable {
         COMMAND,       // For Nukkit tp command only
         PLUGIN,        // Every plugin
         NETHER_PORTAL, // Teleport using Nether portal
-        UNKNOWN;       // Unknown cause
+        UNKNOWN       // Unknown cause
     }
 }

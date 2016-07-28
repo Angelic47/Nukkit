@@ -267,6 +267,7 @@ public abstract class Block extends Position implements Metadatable, Cloneable {
     public static final int DARK_OAK_DOOR_BLOCK = 197;
 
     public static final int GRASS_PATH = 198;
+    public static final int ITEM_FRAME_BLOCK = 199;
 
     public static final int PODZOL = 243;
     public static final int BEETROOT_BLOCK = 244;
@@ -385,7 +386,7 @@ public abstract class Block extends Position implements Metadatable, Cloneable {
             list[NETHER_PORTAL] = BlockNetherPortal.class;
             list[LIT_PUMPKIN] = BlockPumpkinLit.class;
             list[CAKE_BLOCK] = BlockCake.class;
-
+            list[ITEM_FRAME_BLOCK] = BlockItemFrame.class;
             list[INVISIBLE_BEDROCK] = BlockBedrockInvisible.class;
             list[TRAPDOOR] = BlockTrapdoor.class;
 
@@ -848,17 +849,17 @@ public abstract class Block extends Position implements Metadatable, Cloneable {
 
         int f = -1;
 
-        if (vector.equals(v1)) {
+        if (vector == v1) {
             f = 4;
-        } else if (vector.equals(v2)) {
+        } else if (vector == v2) {
             f = 5;
-        } else if (vector.equals(v3)) {
+        } else if (vector == v3) {
             f = 0;
-        } else if (vector.equals(v4)) {
+        } else if (vector == v4) {
             f = 1;
-        } else if (vector.equals(v5)) {
+        } else if (vector == v5) {
             f = 2;
-        } else if (vector.equals(v6)) {
+        } else if (vector == v6) {
             f = 3;
         }
 

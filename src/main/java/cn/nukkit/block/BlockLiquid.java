@@ -17,6 +17,11 @@ import java.util.concurrent.ThreadLocalRandom;
  */
 public abstract class BlockLiquid extends BlockTransparent {
 
+    public int adjacentSources = 0;
+    public final boolean[] isOptimalFlowDirection = {false, false, false, false};
+    public final int[] flowinCost = {0, 0, 0, 0};
+    private Vector3 temporalVector = null;
+
     protected BlockLiquid(int meta) {
         super(meta);
     }
@@ -45,16 +50,6 @@ public abstract class BlockLiquid extends BlockTransparent {
     public AxisAlignedBB getBoundingBox() {
         return null;
     }
-
-    @Override
-    public int[][] getDrops(Item item) {
-        return new int[0][];
-    }
-
-    public int adjacentSources = 0;
-    public boolean[] isOptimalFlowDirection = {false, false, false, false};
-    public int[] flowinCost = {0, 0, 0, 0};
-    private Vector3 temporalVector = null;
 
     public float getFluidHeightPercent() {
         float d = (float) this.meta;
@@ -329,7 +324,6 @@ public abstract class BlockLiquid extends BlockTransparent {
             }
 
             this.getLevel().setBlock(block, this.getBlock(newFlowDecay), true);
-            this.getLevel().scheduleUpdate(block, this.tickRate());
         }
     }
 
@@ -384,6 +378,11 @@ public abstract class BlockLiquid extends BlockTransparent {
     @Override
     public double getHardness() {
         return 100;
+    }
+
+    @Override
+    public double getResistance() {
+        return 500;
     }
 
     private boolean[] getOptimalFlowDirections() {
@@ -480,4 +479,14 @@ public abstract class BlockLiquid extends BlockTransparent {
     }
 
     public abstract BlockLiquid getBlock(int meta);
+
+    @Override
+    public boolean canPassThrough() {
+        return true;
+    }
+
+    @Override
+    public void onEntityCollide(Entity entity) {
+        entity.resetFallDistance();
+    }
 }

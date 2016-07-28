@@ -18,7 +18,7 @@ import cn.nukkit.utils.TextFormat;
 public class TeleportCommand extends VanillaCommand {
     public TeleportCommand(String name) {
         super(name, "%nukkit.command.tp.description", "%commands.tp.usage");
-        this.setPermission("nukkit.command.tp");
+        this.setPermission("nukkit.command.teleport");
     }
 
     @Override
@@ -72,15 +72,15 @@ public class TeleportCommand extends VanillaCommand {
             } else {
                 pos = 0;
             }
-            int x;
-            int y;
-            int z;
+            double x;
+            double y;
+            double z;
             double yaw;
             double pitch;
             try {
-                x = Integer.parseInt(args[pos++]);
-                y = Integer.parseInt(args[pos++]);
-                z = Integer.parseInt(args[pos++]);
+                x = Double.parseDouble(args[pos++]);
+                y = Double.parseDouble(args[pos++]);
+                z = Double.parseDouble(args[pos++]);
                 yaw = ((Player) target).getYaw();
                 pitch = ((Player) target).getPitch();
             } catch (NumberFormatException e1) {

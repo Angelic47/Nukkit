@@ -3,6 +3,7 @@ package cn.nukkit.plugin;
 import cn.nukkit.Server;
 import cn.nukkit.command.PluginCommand;
 import cn.nukkit.command.SimpleCommandMap;
+import cn.nukkit.command.defaults.TimingsCommand;
 import cn.nukkit.event.*;
 import cn.nukkit.permission.Permissible;
 import cn.nukkit.permission.Permission;
@@ -23,25 +24,29 @@ import java.util.regex.Pattern;
  */
 public class PluginManager {
 
-    private Server server;
+    private final Server server;
 
-    private SimpleCommandMap commandMap;
+    private final SimpleCommandMap commandMap;
 
-    protected Map<String, Plugin> plugins = new LinkedHashMap<>();
+    protected final Map<String, Plugin> plugins = new LinkedHashMap<>();
 
-    protected Map<String, Permission> permissions = new HashMap<>();
+    protected final Map<String, Permission> permissions = new HashMap<>();
 
-    protected Map<String, Permission> defaultPerms = new HashMap<>();
+    protected final Map<String, Permission> defaultPerms = new HashMap<>();
 
-    protected Map<String, Permission> defaultPermsOp = new HashMap<>();
+    protected final Map<String, Permission> defaultPermsOp = new HashMap<>();
 
-    protected Map<String, WeakHashMap<Permissible, Permissible>> permSubs = new HashMap<>();
+    protected final Map<String, WeakHashMap<Permissible, Permissible>> permSubs = new HashMap<>();
 
-    protected Map<Permissible, Permissible> defSubs = new WeakHashMap<>();
+    protected final Map<Permissible, Permissible> defSubs = new WeakHashMap<>();
 
-    protected Map<Permissible, Permissible> defSubsOp = new WeakHashMap<>();
+    protected final Map<Permissible, Permissible> defSubsOp = new WeakHashMap<>();
 
-    protected Map<String, PluginLoader> fileAssociations = new HashMap<>();
+    protected final Map<String, PluginLoader> fileAssociations = new HashMap<>();
+
+    public static TimingsHandler pluginParentTimer;
+
+    public static boolean useTimings = false;
 
     public PluginManager(Server server, SimpleCommandMap commandMap) {
         this.server = server;
@@ -307,8 +312,12 @@ public class PluginManager {
                 }
             }
 
+            TimingsCommand.timingStart = System.nanoTime();
+
             return loadedPlugins;
         } else {
+            TimingsCommand.timingStart = System.nanoTime();
+
             return new HashMap<>();
         }
     }
@@ -356,6 +365,7 @@ public class PluginManager {
     }
 
     private void calculatePermissionDefault(Permission permission) {
+        Timings.permissionDefaultTimer.startTiming();
         if (permission.getDefault().equals(Permission.DEFAULT_OP) || permission.getDefault().equals(Permission.DEFAULT_TRUE)) {
             this.defaultPermsOp.put(permission.getName(), permission);
             this.dirtyPermissibles(true);
@@ -365,6 +375,7 @@ public class PluginManager {
             this.defaultPerms.put(permission.getName(), permission);
             this.dirtyPermissibles(false);
         }
+        Timings.permissionDefaultTimer.startTiming();
     }
 
     private void dirtyPermissibles(boolean op) {
@@ -630,7 +641,11 @@ public class PluginManager {
         }
 
         try {
-            this.getEventListeners(event).register(new RegisteredListener(listener, executor, priority, plugin, ignoreCancelled));
+            TimingsHandler timings = new TimingsHandler("Plugin: " + plugin.getDescription().getFullName()
+                    + " Event: " + listener.getClass().getName() + "."
+                    + (executor instanceof MethodEventExecutor ? ((MethodEventExecutor) executor).getMethod().getName() : "???")
+                    + "(" + event.getSimpleName() + ")", pluginParentTimer);
+            this.getEventListeners(event).register(new RegisteredListener(listener, executor, priority, plugin, ignoreCancelled, timings));
         } catch (IllegalAccessException e) {
             Server.getInstance().getLogger().logException(e);
         }
@@ -659,6 +674,14 @@ public class PluginManager {
                 throw new IllegalAccessException("Unable to find handler list for event " + clazz.getName() + ". Static getHandlers method required!");
             }
         }
+    }
+
+    public boolean useTimings() {
+        return useTimings;
+    }
+
+    public void setUseTimings(boolean use) {
+        useTimings = use;
     }
 
 }

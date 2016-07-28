@@ -9,12 +9,11 @@ import cn.nukkit.entity.EntityHuman;
 import cn.nukkit.entity.data.Skin;
 import cn.nukkit.entity.item.*;
 import cn.nukkit.entity.mob.EntityCreeper;
+import cn.nukkit.entity.passive.*;
 import cn.nukkit.entity.projectile.EntityArrow;
 import cn.nukkit.entity.projectile.EntitySnowball;
 import cn.nukkit.entity.weather.EntityLightning;
-import cn.nukkit.event.HandlerList;
-import cn.nukkit.event.TextContainer;
-import cn.nukkit.event.TranslationContainer;
+import cn.nukkit.event.*;
 import cn.nukkit.event.level.LevelInitEvent;
 import cn.nukkit.event.level.LevelLoadEvent;
 import cn.nukkit.event.server.QueryRegenerateEvent;
@@ -51,6 +50,7 @@ import cn.nukkit.network.protocol.CraftingDataPacket;
 import cn.nukkit.network.protocol.DataPacket;
 import cn.nukkit.network.protocol.PlayerListPacket;
 import cn.nukkit.network.query.QueryHandler;
+import cn.nukkit.network.rcon.RCON;
 import cn.nukkit.permission.BanEntry;
 import cn.nukkit.permission.BanList;
 import cn.nukkit.permission.DefaultPermissions;
@@ -102,9 +102,9 @@ public class Server {
 
     private long nextTick;
 
-    private float[] tickAverage = {20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20};
+    private final float[] tickAverage = {20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20};
 
-    private float[] useAverage = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
+    private final float[] useAverage = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
 
     private float maxTick = 20;
 
@@ -114,9 +114,9 @@ public class Server {
 
     private boolean dispatchSignals = false;
 
-    private MainLogger logger;
+    private final MainLogger logger;
 
-    private CommandReader console;
+    private final CommandReader console;
 
     private SimpleCommandMap commandMap;
 
@@ -127,6 +127,8 @@ public class Server {
     private int maxPlayers;
 
     private boolean autoSave;
+
+    private RCON rcon;
 
     private EntityMetadataStore entityMetadata;
 
@@ -153,11 +155,11 @@ public class Server {
 
     private UUID serverID;
 
-    private String filePath;
-    private String dataPath;
-    private String pluginPath;
+    private final String filePath;
+    private final String dataPath;
+    private final String pluginPath;
 
-    private Set<UUID> uniquePlayers = new HashSet<>();
+    private final Set<UUID> uniquePlayers = new HashSet<>();
 
     private QueryHandler queryHandler;
 
@@ -166,13 +168,13 @@ public class Server {
     private Config properties;
     private Config config;
 
-    private Map<String, Player> players = new HashMap<>();
+    private final Map<String, Player> players = new HashMap<>();
 
-    private Map<UUID, Player> playerList = new HashMap<>();
+    private final Map<UUID, Player> playerList = new HashMap<>();
 
-    private Map<Player, String> identifier = new HashMap<>();
+    private final Map<Integer, String> identifier = new HashMap<>();
 
-    private Map<Integer, Level> levels = new HashMap<>();
+    private final Map<Integer, Level> levels = new HashMap<>();
 
     private Level defaultLevel = null;
 
@@ -239,12 +241,12 @@ public class Server {
         this.config = new Config(this.dataPath + "nukkit.yml", Config.YAML);
 
         this.logger.info("Loading " + TextFormat.GREEN + "server properties" + TextFormat.WHITE + "...");
-        this.properties = new Config(this.dataPath + "server.properties", Config.PROPERTIES, new LinkedHashMap<String, Object>() {
+        this.properties = new Config(this.dataPath + "server.properties", Config.PROPERTIES, new ConfigSection() {
             {
                 put("motd", "Nukkit Server For Minecraft: PE");
                 put("server-port", 19132);
                 put("server-ip", "0.0.0.0");
-                put("view-distance", 16);
+                put("view-distance", 10);
                 put("white-list", false);
                 put("announce-player-achievements", true);
                 put("spawn-protection", 16);
@@ -309,6 +311,10 @@ public class Server {
 
         this.scheduler = new ServerScheduler();
 
+        if (this.getPropertyBoolean("enable-rcon", false)) {
+            this.rcon = new RCON(this, this.getPropertyString("rcon.password", ""), (!this.getIp().equals("")) ? this.getIp() : "0.0.0.0", this.getPropertyInt("rcon.port", this.getPort()));
+        }
+
         this.entityMetadata = new EntityMetadataStore();
         this.playerMetadata = new PlayerMetadataStore();
         this.levelMetadata = new LevelMetadataStore();
@@ -341,6 +347,7 @@ public class Server {
         this.logger.info(this.getLanguage().translateString("nukkit.server.info", new String[]{this.getName(), TextFormat.YELLOW + this.getNukkitVersion() + TextFormat.WHITE, TextFormat.AQUA + this.getCodename() + TextFormat.WHITE, this.getApiVersion()}));
         this.logger.info(this.getLanguage().translateString("nukkit.server.license", this.getName()));
 
+
         this.consoleSender = new ConsoleCommandSender();
         this.commandMap = new SimpleCommandMap(this);
 
@@ -355,11 +362,13 @@ public class Server {
         Potion.init();
         Enchantment.init();
         Attribute.init();
+        Timings.init();
 
         this.craftingManager = new CraftingManager();
 
         this.pluginManager = new PluginManager(this, this.commandMap);
         this.pluginManager.subscribeToPermission(Server.BROADCAST_CHANNEL_ADMINISTRATIVE, this.consoleSender);
+        this.pluginManager.setUseTimings((Boolean) this.getConfig("settings.enable-profiling", false));
 
         this.pluginManager.registerInterface(JavaPluginLoader.class);
 
@@ -437,9 +446,11 @@ public class Server {
             return;
         }
 
-        this.enablePlugins(PluginLoadOrder.POSTWORLD);
+        if ((int) this.getConfig("ticks-per.autosave", 6000) > 0) {
+            this.autoSaveTicks = (int) this.getConfig("ticks-per.autosave", 6000);
+        }
 
-        this.queryRegenerateEvent = new QueryRegenerateEvent(this, 5);
+        this.enablePlugins(PluginLoadOrder.POSTWORLD);
 
         this.start();
     }
@@ -539,6 +550,10 @@ public class Server {
     }
 
     public void batchPackets(Player[] players, DataPacket[] packets, boolean forceSync) {
+        if (players == null || packets == null || players.length == 0 || packets.length == 0) {
+            return;
+        }
+        Timings.playerNetworkTimer.startTiming();
         byte[][] payload = new byte[packets.length * 2][];
         for (int i = 0; i < packets.length; i++) {
             DataPacket p = packets[i];
@@ -555,7 +570,7 @@ public class Server {
         List<String> targets = new ArrayList<>();
         for (Player p : players) {
             if (p.isConnected()) {
-                targets.add(this.identifier.get(p));
+                targets.add(this.identifier.get(p.rawHashCode()));
             }
         }
 
@@ -568,6 +583,7 @@ public class Server {
                 throw new RuntimeException(e);
             }
         }
+        Timings.playerNetworkTimer.stopTiming();
     }
 
     public void broadcastPacketsCallback(byte[] data, List<String> identifiers) {
@@ -657,6 +673,7 @@ public class Server {
         this.pluginManager.loadPlugins(this.pluginPath);
         this.enablePlugins(PluginLoadOrder.STARTUP);
         this.enablePlugins(PluginLoadOrder.POSTWORLD);
+        TimingsHandler.reload();
     }
 
     public void shutdown() {
@@ -684,6 +701,10 @@ public class Server {
 
             this.shutdown();
 
+            if (this.rcon != null) {
+                this.rcon.close();
+            }
+
             this.getLogger().debug("Disabling all plugins");
             this.pluginManager.disablePlugins();
 
@@ -702,9 +723,6 @@ public class Server {
             this.getLogger().debug("Stopping all tasks");
             this.scheduler.cancelAllTasks();
             this.scheduler.mainThreadHeartbeat(Integer.MAX_VALUE);
-
-            this.getLogger().debug("Saving properties");
-            this.properties.save();
 
             this.getLogger().debug("Closing console");
             this.console.interrupt();
@@ -781,7 +799,7 @@ public class Server {
 
     public void addPlayer(String identifier, Player player) {
         this.players.put(identifier, player);
-        this.identifier.put(player, identifier);
+        this.identifier.put(player.rawHashCode(), identifier);
     }
 
     public void addOnlinePlayer(Player player) {
@@ -847,7 +865,7 @@ public class Server {
         pk.type = PlayerListPacket.TYPE_ADD;
         List<PlayerListPacket.Entry> entries = new ArrayList<>();
         for (Player p : this.playerList.values()) {
-            if (!self && p.equals(player)) {
+            if (!self && p == player) {
                 continue;
             }
 
@@ -930,6 +948,7 @@ public class Server {
 
     public void doAutoSave() {
         if (this.getAutoSave()) {
+            Timings.worldSaveTimer.startTiming();
             for (Player player : new ArrayList<>(this.players.values())) {
                 if (player.isOnline()) {
                     player.save(true);
@@ -941,6 +960,7 @@ public class Server {
             for (Level level : this.getLevels().values()) {
                 level.save();
             }
+            Timings.worldSaveTimer.stopTiming();
         }
     }
 
@@ -951,12 +971,23 @@ public class Server {
             return false;
         }
 
+        Timings.serverTickTimer.startTiming();
+
         ++this.tickCounter;
+
+        Timings.connectionTimer.startTiming();
 
         this.network.processInterfaces();
 
-        this.scheduler.mainThreadHeartbeat(this.tickCounter);
+        if (this.rcon != null) {
+            this.rcon.check();
+        }
 
+        Timings.connectionTimer.stopTiming();
+
+        Timings.schedulerTimer.startTiming();
+        this.scheduler.mainThreadHeartbeat(this.tickCounter);
+        Timings.schedulerTimer.stopTiming();
         this.checkTickUpdates(this.tickCounter, tickTime);
 
         for (Player player : new ArrayList<>(this.players.values())) {
@@ -1001,6 +1032,8 @@ public class Server {
                 this.logger.warning(this.getLanguage().translateString("nukkit.server.tickOverload"));
             }
         }
+
+        Timings.serverTickTimer.stopTiming();
 
         //long now = System.currentTimeMillis();
         long nowNano = System.nanoTime();
@@ -1107,17 +1140,7 @@ public class Server {
     }
 
     public int getViewDistance() {
-        int distance = this.getPropertyInt("view-distance", 10);
-
-        if (distance < 10) {
-            distance = 10;
-        } else if (distance > 22) {
-            distance = 22;
-        }
-
-        this.setPropertyInt("view-distance", distance);
-
-        return distance;
+        return this.getPropertyInt("view-distance", 10);
     }
 
     public String getIp() {
@@ -1310,8 +1333,8 @@ public class Server {
         return commandMap;
     }
 
-    public Map<String, Player> getOnlinePlayers() {
-        return new HashMap<>(players);
+    public Map<UUID, Player> getOnlinePlayers() {
+        return new HashMap<>(playerList);
     }
 
     public void addRecipe(Recipe recipe) {
@@ -1438,18 +1461,18 @@ public class Server {
     }
 
     public void removePlayer(Player player) {
-        if (this.identifier.containsKey(player)) {
-            String identifier = this.identifier.get(player);
+        if (this.identifier.containsKey(player.rawHashCode())) {
+            String identifier = this.identifier.get(player.rawHashCode());
             this.players.remove(identifier);
-            this.identifier.remove(player);
+            this.identifier.remove(player.rawHashCode());
             return;
         }
 
         for (String identifier : new ArrayList<>(this.players.keySet())) {
             Player p = this.players.get(identifier);
-            if (player.equals(p)) {
+            if (player == p) {
                 this.players.remove(identifier);
-                this.identifier.remove(player);
+                this.identifier.remove(player.rawHashCode());
                 break;
             }
         }
@@ -1464,7 +1487,7 @@ public class Server {
     }
 
     public void setDefaultLevel(Level defaultLevel) {
-        if (defaultLevel == null || (this.isLevelLoaded(defaultLevel.getFolderName()) && !defaultLevel.equals(this.defaultLevel))) {
+        if (defaultLevel == null || (this.isLevelLoaded(defaultLevel.getFolderName()) && defaultLevel != this.defaultLevel)) {
             this.defaultLevel = defaultLevel;
         }
     }
@@ -1495,7 +1518,7 @@ public class Server {
     }
 
     public boolean unloadLevel(Level level, boolean forceUnload) {
-        if (Objects.equals(level, this.getDefaultLevel()) && !forceUnload) {
+        if (level == this.getDefaultLevel() && !forceUnload) {
             throw new IllegalStateException("The default level cannot be unloaded while running, please switch levels.");
         }
 
@@ -1679,6 +1702,7 @@ public class Server {
 
     public void setPropertyString(String variable, String value) {
         this.properties.set(variable, value);
+        this.properties.save();
     }
 
     public String getPropertyString(String variable) {
@@ -1699,6 +1723,7 @@ public class Server {
 
     public void setPropertyInt(String variable, int value) {
         this.properties.set(variable, value);
+        this.properties.save();
     }
 
     public boolean getPropertyBoolean(String variable) {
@@ -1722,6 +1747,7 @@ public class Server {
 
     public void setPropertyBoolean(String variable, boolean value) {
         this.properties.set(variable, value ? "1" : "0");
+        this.properties.save();
     }
 
     public PluginIdentifiableCommand getPluginCommand(String name) {
@@ -1822,6 +1848,15 @@ public class Server {
         Entity.registerEntity("Painting", EntityPainting.class);
         //todo mobs
         Entity.registerEntity("Creeper", EntityCreeper.class);
+        //TODO: more mobs
+        Entity.registerEntity("Chicken", EntityChicken.class);
+        Entity.registerEntity("Cow", EntityCow.class);
+        Entity.registerEntity("Pig", EntityPig.class);
+        Entity.registerEntity("Rabbit", EntityRabbit.class);
+        Entity.registerEntity("Sheep", EntitySheep.class);
+        Entity.registerEntity("Wolf", EntityWolf.class);
+        Entity.registerEntity("Ocelot", EntityOcelot.class);
+        Entity.registerEntity("Villager", EntityVillager.class);
 
         Entity.registerEntity("ThrownExpBottle", EntityExpBottle.class);
         Entity.registerEntity("XpOrb", EntityXPOrb.class);
@@ -1844,6 +1879,7 @@ public class Server {
         BlockEntity.registerBlockEntity(BlockEntity.SKULL, BlockEntitySkull.class);
         BlockEntity.registerBlockEntity(BlockEntity.FLOWER_POT, BlockEntityFlowerPot.class);
         BlockEntity.registerBlockEntity(BlockEntity.BREWING_STAND, BlockEntityBrewingStand.class);
+        BlockEntity.registerBlockEntity(BlockEntity.ITEM_FRAME, BlockEntityItemFrame.class);
     }
 
     public static Server getInstance() {

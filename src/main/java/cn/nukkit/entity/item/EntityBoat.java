@@ -1,14 +1,17 @@
 package cn.nukkit.entity.item;
 
 import cn.nukkit.Player;
+import cn.nukkit.Server;
 import cn.nukkit.entity.Entity;
 import cn.nukkit.event.entity.EntityDamageByEntityEvent;
 import cn.nukkit.event.entity.EntityDamageEvent;
 import cn.nukkit.item.ItemBoat;
 import cn.nukkit.level.format.FullChunk;
+import cn.nukkit.level.particle.SmokeParticle;
 import cn.nukkit.math.Vector3;
 import cn.nukkit.nbt.tag.CompoundTag;
 import cn.nukkit.network.protocol.AddEntityPacket;
+import cn.nukkit.network.protocol.EntityEventPacket;
 
 /**
  * Created by yescallop on 2016/2/13.
@@ -18,6 +21,10 @@ public class EntityBoat extends EntityVehicle {
     public static final int NETWORK_ID = 90;
 
     public static final int DATA_WOOD_ID = 20;
+
+    public EntityBoat(FullChunk chunk, CompoundTag nbt) {
+        super(chunk, nbt);
+    }
 
     @Override
     protected void initEntity() {
@@ -54,10 +61,6 @@ public class EntityBoat extends EntityVehicle {
         return NETWORK_ID;
     }
 
-    public EntityBoat(FullChunk chunk, CompoundTag nbt) {
-        super(chunk, nbt);
-    }
-
     @Override
     public void spawnTo(Player player) {
         AddEntityPacket pk = new AddEntityPacket();
@@ -79,25 +82,39 @@ public class EntityBoat extends EntityVehicle {
 
     @Override
     public void attack(EntityDamageEvent source) {
-        if (source instanceof EntityDamageByEntityEvent) {
-            Entity damager = ((EntityDamageByEntityEvent) source).getDamager();
-            if (damager instanceof Player && ((Player) damager).isCreative()) {
-                source.setDamage(this.health);
-            }
-        }
         super.attack(source);
         if (source.isCancelled()) return;
+        if (source instanceof EntityDamageByEntityEvent) {
+            Entity damager = ((EntityDamageByEntityEvent) source).getDamager();
+            if (damager instanceof Player) {
+                if (((Player) damager).isCreative()) {
+                    this.kill();
+                }
+                if (this.getHealth() <= 0) {
+                    if (((Player) damager).isSurvival()) {
+                        this.level.dropItem(this, new ItemBoat());
+                    }
+                    this.close();
+                }
+            }
+        }
 
-        //TODO: HURT ANIMATION
+        EntityEventPacket pk = new EntityEventPacket();
+        pk.eid = this.getId();
+        pk.event = this.getHealth() <= 0 ? EntityEventPacket.DEATH_ANIMATION : EntityEventPacket.HURT_ANIMATION;
+        Server.broadcastPacket(this.hasSpawned.values(), pk);
     }
 
     @Override
     public void close() {
         super.close();
 
-        this.level.dropItem(this, new ItemBoat());
+        if (this.linkedEntity instanceof Player) {
+            this.linkedEntity.riding = null;
+        }
 
-        // TODO Add praticle
+        SmokeParticle particle = new SmokeParticle(this);
+        this.level.addParticle(particle);
     }
 
     @Override

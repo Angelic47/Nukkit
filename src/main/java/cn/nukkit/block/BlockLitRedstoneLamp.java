@@ -27,13 +27,18 @@ public class BlockLitRedstoneLamp extends BlockRedstoneLamp {
     }
 
     @Override
+    public int getLightLevel() {
+        return 15;
+    }
+
+    @Override
     public int onUpdate(int type) {
         if ((type == Level.BLOCK_UPDATE_NORMAL || type == Level.BLOCK_UPDATE_SCHEDULED) && this.getNeighborPowerLevel() <= 0) {
             this.getLevel().setBlock(this, new BlockRedstoneLamp());
         }
         return 0;
     }
-    
+
     @Override
     public int[][] getDrops(Item item) {
         return new int[][]{

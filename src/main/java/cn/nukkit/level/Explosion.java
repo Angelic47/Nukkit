@@ -29,15 +29,15 @@ import java.util.concurrent.ThreadLocalRandom;
  */
 public class Explosion {
 
-    private int rays = 16; //Rays
-    private Level level;
-    private Position source;
-    private double size;
+    private final int rays = 16; //Rays
+    private final Level level;
+    private final Position source;
+    private final double size;
 
-    private HashMap<String, Block> affectedBlocks = new HashMap<>();
-    private double stepLen = 0.3d;
+    private List<Block> affectedBlocks = new ArrayList<>();
+    private final double stepLen = 0.3d;
 
-    private Object what;
+    private final Object what;
 
     public Explosion(Position center, double size, Entity what) {
         this.level = center.getLevel();
@@ -96,8 +96,8 @@ public class Explosion {
                                 blastForce -= (block.getResistance() / 5 + 0.3d) * this.stepLen;
                                 if (blastForce > 0) {
                                     String index = Level.blockHash((int) block.x, (int) block.y, (int) block.z);
-                                    if (!this.affectedBlocks.containsKey(index)) {
-                                        this.affectedBlocks.put(index, block);
+                                    if (!this.affectedBlocks.contains(block)) {
+                                        this.affectedBlocks.add(block);
                                     }
                                 }
                             }
@@ -169,9 +169,11 @@ public class Explosion {
 
         ItemBlock air = new ItemBlock(new BlockAir());
 
-        Iterator iter = this.affectedBlocks.entrySet().iterator();
+        Iterator iter = this.affectedBlocks.iterator();
+        //Iterator iter = this.affectedBlocks.entrySet().iterator();
         while (iter.hasNext()) {
-            Block block = (Block) ((HashMap.Entry) iter.next()).getValue();
+            Block block = (Block) iter.next();
+            //Block block = (Block) ((HashMap.Entry) iter.next()).getValue();
             if (block.getId() == Block.TNT) {
                 double mot = Math.random() * Math.PI * 2;
                 EntityPrimedTNT tnt = new EntityPrimedTNT(this.level.getChunk((int) block.x >> 4, (int) block.z >> 4),
@@ -203,7 +205,7 @@ public class Explosion {
             for (int side = 0; side < 5; side++) {
                 Vector3 sideBlock = pos.getSide(side);
                 String index = Level.blockHash((int) sideBlock.x, (int) sideBlock.y, (int) sideBlock.z);
-                if (!this.affectedBlocks.containsKey(index) && !updateBlocks.containsKey(index)) {
+                if (!this.affectedBlocks.contains(sideBlock) && !updateBlocks.containsKey(index)) {
                     BlockUpdateEvent ev = new BlockUpdateEvent(this.level.getBlock(sideBlock));
                     this.level.getServer().getPluginManager().callEvent(ev);
                     if (!ev.isCancelled()) {

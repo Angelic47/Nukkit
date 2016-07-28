@@ -124,6 +124,9 @@ public class EntityItem extends Entity {
 
         this.lastUpdate = currentTick;
 
+        this.timings.startTiming();
+
+
         boolean hasUpdate = this.entityBaseTick(tickDiff);
 
         if (this.isAlive()) {
@@ -171,11 +174,16 @@ public class EntityItem extends Entity {
             }
         }
 
+        this.timings.stopTiming();
+
         return hasUpdate || !this.onGround || Math.abs(this.motionX) > 0.00001 || Math.abs(this.motionY) > 0.00001 || Math.abs(this.motionZ) > 0.00001;
     }
 
     @Override
     public void saveNBT() {
+        if (this.item == null) {
+            return;
+        }
         super.saveNBT();
         this.namedTag.putCompound("Item", new CompoundTag()
                 .putShort("id", this.item.getId())

@@ -10,7 +10,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class CompoundTag extends Tag {
-    private Map<String, Tag> tags = new HashMap<>();
+    private final Map<String, Tag> tags = new HashMap<>();
 
     public CompoundTag() {
         super("");
@@ -234,5 +234,15 @@ public class CompoundTag extends Tag {
             return tags.entrySet().equals(o.tags.entrySet());
         }
         return false;
+    }
+
+    /**
+     * Check existence of NBT tag
+     *
+     * @param name - NBT tag Id.
+     * @return - true, if tag exists
+     */
+    public boolean exist(String name) {
+        return tags.containsKey(name);
     }
 }
